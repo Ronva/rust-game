@@ -24,15 +24,11 @@ impl Renderable {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Player {}
+pub struct Player {
+  pub id: String
+}
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Ignore {}
 
 // Components end
-
-pub struct PlayerInfo {
-  pub id: String,
-  pub x: i32,
-  pub y: i32,
-}

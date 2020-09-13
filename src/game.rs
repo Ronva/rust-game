@@ -1,4 +1,3 @@
-use legion::world::Entry;
 use legion::*;
 use rltk::prelude::*;
 use rltk::{BTerm, GameState, RGB};
@@ -9,7 +8,7 @@ use std::str;
 use crate::constants::*;
 use crate::net;
 use crate::structs::*;
-use crate::utils;
+use crate::utils::*;
 
 pub struct State {
   pub ecs: World,
@@ -22,14 +21,7 @@ impl GameState for State {
     ctx.cls();
 
     // listen for UDP messages
-    let mut buf = vec![0_u8; 536870912];
-    match self.socket.recv(&mut buf) {
-      Ok(received) => {
-        let decoded = str::from_utf8(&buf[..received]).unwrap();
-        self.process_server_data(String::from(decoded));
-      }
-      _ => {}
-    }
+    net::udp_listener(self);
 
     // listen for player input
     player_input(self, ctx);
@@ -49,87 +41,31 @@ impl GameState for State {
   }
 }
 
-impl State {
-  fn create_player(&mut self, player_id: String, x: i32, y: i32) {
-    let entity: Entity = self.ecs.push((
-      Position { x: x, y: y },
-      Renderable {
-        glyph: '@',
-        fg: RGB::named(rltk::WHITE),
-        bg: RGB::named(rltk::BLACK),
-      },
-      Player {},
-    ));
-    self.players.insert(player_id, entity);
-  }
-  fn process_server_data(&mut self, data: String) {
-    let strings: Vec<&str> = data.split(":").collect();
-    let (op, info) = (strings[0], strings[1]);
-    match op {
-      // c: current player has connected
-      "c" => {
-        let players: Vec<&str> = info.split(";").collect();
-        for player in players.iter() {
-          if let Some(PlayerInfo { id, x, y }) = self.get_player_info(player) {
-            self.create_player(id, x, y);
-          }
+pub fn process_server_data(gs: &mut State, data: String) {
+  let strings: Vec<&str> = data.split(":").collect();
+  let (op, info) = (strings[0], strings[1]);
+  match op {
+    // c: current player has connected
+    "c" => {
+      let players: Vec<&str> = info.split(";").collect();
+      for p in players.iter() {
+        if let Some((player, pos)) = get_player_info(p) {
+          create_player(gs, player, pos);
         }
       }
-      // u: a player's position has been updated
-      "u" => {
-        if let Some(PlayerInfo { id, x, y }) = self.get_player_info(info) {
-          let player_id = id.clone();
-          match get_player_entry(self, player_id) {
-            // if player exists move them, otherwise create them
-            Some(_entry) => move_player(self, id, x, y),
-            None => self.create_player(id, x, y),
-          }
+    }
+    // u: a player's position has been updated
+    "u" => {
+      if let Some((player, pos)) = get_player_info(info) {
+        let id = player.id.clone();
+        if let Some(_entry) = get_player_entry(gs, id) {
+          move_player(gs, player.id, pos.x, pos.y)
+        } else {
+          create_player(gs, player, pos)
         }
       }
-      _ => {}
     }
-  }
-  fn get_player_info(&mut self, info: &str) -> Option<PlayerInfo> {
-    let player_info: Vec<&str> = info.split(",").collect();
-    let mut info = None;
-    if player_info.len() == 3 {
-      let player_id = String::from(player_info[0]);
-      let x = player_info[1].parse().unwrap();
-      let y = player_info[2].parse().unwrap();
-      info = Some(PlayerInfo {
-        id: player_id,
-        x: x,
-        y: y,
-      })
-    }
-    info
-  }
-}
-
-fn get_player_entry(gs: &mut State, player_id: String) -> Option<Entry> {
-  let mut pos = None;
-  if let Some(entity) = gs.players.get(&player_id) {
-    if let Some(entry) = gs.ecs.entry(*entity) {
-      pos = Some(entry)
-    }
-  }
-  pos
-}
-
-fn move_player(gs: &mut State, player_id: String, x: i32, y: i32) {
-  if let Some(mut entry) = get_player_entry(gs, player_id) {
-    entry.remove_component::<Position>();
-    entry.add_component::<Position>(Position { x: x, y: y });
-  }
-}
-
-fn move_player_delta(gs: &mut State, player_id: String, delta_x: i32, delta_y: i32) {
-  if let Some(mut entry) = get_player_entry(gs, player_id) {
-    let mut pos: Position = *entry.get_component_mut::<Position>().unwrap();
-    pos.x = pos.x + delta_x;
-    pos.y = pos.y + delta_y;
-    entry.remove_component::<Position>();
-    entry.add_component::<Position>(pos);
+    _ => {}
   }
 }
 
@@ -169,9 +105,16 @@ pub fn run(socket: UdpSocket) -> rltk::BError {
     players: HashMap::new(),
   };
 
-  utils::draw_stars(&mut gs);
-  // utils::draw_ascii(&mut gs, PLANET, 3, 3);
-  gs.create_player(String::from("me"), 0, 0);
+  let stars = generate_stars();
+  let _entities: &[Entity] = gs.ecs.extend(stars);
+  // draw_ascii(&mut gs, PLANET, 3, 3);
+  create_player(
+    &mut gs,
+    Player {
+      id: String::from("me"),
+    },
+    Position { x: 0, y: 0 },
+  );
 
   rltk::main_loop(context, gs)
 }

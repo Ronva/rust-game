@@ -1,8 +1,10 @@
+pub const SERVER_PORT: u32 = 2052;
+
 pub const WIDTH: i32 = 80;
 pub const HEIGHT: i32 = 50;
 
 // prettier-ignore
-pub const PLANET: &str = r#"
+pub const _PLANET: &str = r#"
                                              ___
                                           ,o88888
                                        ,o8888888'
