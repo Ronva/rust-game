@@ -8,5 +8,5 @@ edition = "2018"
 
 [dependencies]
 rand = "0.7.3"
-rltk = "0.8.1"
+bracket-lib = "0.8.1"
 legion = "0.3.0"

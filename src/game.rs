@@ -1,6 +1,5 @@
+use bracket_lib::prelude::*;
 use legion::*;
-use rltk::prelude::*;
-use rltk::{BTerm, GameState, RGB};
 use std::collections::HashMap;
 use std::net::UdpSocket;
 use std::str;
@@ -30,13 +29,7 @@ impl GameState for State {
       .filter(!component::<Ignore>() & maybe_changed::<Position>());
 
     for (render, pos) in query.iter_mut(&mut self.ecs) {
-      ctx.set(
-        pos.x,
-        pos.y,
-        render.fg,
-        render.bg,
-        rltk::to_cp437(render.glyph),
-      );
+      ctx.set(pos.x, pos.y, render.fg, render.bg, to_cp437(render.glyph));
     }
   }
 }
@@ -69,7 +62,7 @@ pub fn process_server_data(gs: &mut State, data: String) {
   }
 }
 
-fn player_input(gs: &mut State, ctx: &mut Rltk) {
+fn player_input(gs: &mut State, ctx: &mut BTerm) {
   let id = String::from("me");
   // Player movement
   match ctx.key {
@@ -96,8 +89,8 @@ fn player_input(gs: &mut State, ctx: &mut Rltk) {
   }
 }
 
-pub fn run(socket: UdpSocket) -> rltk::BError {
-  let context = RltkBuilder::simple(WIDTH, HEIGHT).unwrap().build()?;
+pub fn run(socket: UdpSocket) -> BError {
+  let context = BTermBuilder::simple(WIDTH, HEIGHT).unwrap().build()?;
 
   let mut gs = State {
     ecs: World::default(),
@@ -116,5 +109,5 @@ pub fn run(socket: UdpSocket) -> rltk::BError {
     Position { x: 0, y: 0 },
   );
 
-  rltk::main_loop(context, gs)
+  main_loop(context, gs)
 }

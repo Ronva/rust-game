@@ -1,4 +1,4 @@
-use rltk::RGB;
+use bracket_lib::prelude::RGB;
 
 use crate::utils;
 
@@ -25,7 +25,7 @@ impl Renderable {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Player {
-  pub id: String
+  pub id: String,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]

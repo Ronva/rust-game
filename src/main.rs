@@ -8,5 +8,5 @@ fn main() {
   let socket = net::connect_to_server();
   // net::send_to_server(&socket, b"disconnect");
 
-  let _session = game::run(socket);
+  let _game = game::run(socket);
 }

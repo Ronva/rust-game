@@ -1,6 +1,6 @@
+use bracket_lib::prelude as bracket;
+use bracket_lib::prelude::*;
 use legion::world::Entry;
-use rltk::prelude::*;
-use rltk::{RGB, RGBA};
 use std::str;
 
 use crate::constants::{HEIGHT, WIDTH};
@@ -41,8 +41,8 @@ pub fn draw_ascii(gs: &mut State, ascii: &str, x_offset: i32, y_offset: i32) {
         c,
         x,
         y,
-        RGB::named(rltk::WHITE),
-        RGB::named(rltk::BLACK),
+        RGB::named(bracket::WHITE),
+        RGB::named(bracket::BLACK),
       )
     }
   }
@@ -68,11 +68,11 @@ pub fn generate_stars() -> Vec<(Renderable, Position)> {
       if n > 0.0 && n < 0.8 && should_show > 0.75 {
         let mut renderable = Renderable {
           glyph: '.',
-          fg: RGB::named(rltk::WHITE),
-          bg: RGB::named(rltk::BLACK),
+          fg: RGB::named(bracket::WHITE),
+          bg: RGB::named(bracket::BLACK),
         };
         renderable.transparentize(n);
-        let position = Position { x: x, y: y };
+        let position = Position { x, y };
         stars.push((renderable, position));
       }
     }
@@ -87,8 +87,8 @@ pub fn create_player(gs: &mut State, player: Player, pos: Position) {
     pos,
     Renderable {
       glyph: '@',
-      fg: RGB::named(rltk::WHITE),
-      bg: RGB::named(rltk::BLACK),
+      fg: RGB::named(bracket::WHITE),
+      bg: RGB::named(bracket::BLACK),
     },
     player,
   ));
@@ -123,7 +123,7 @@ pub fn get_player_entry(gs: &mut State, player_id: String) -> Option<Entry> {
 pub fn move_player(gs: &mut State, player_id: String, x: i32, y: i32) {
   if let Some(mut entry) = get_player_entry(gs, player_id) {
     entry.remove_component::<Position>();
-    entry.add_component::<Position>(Position { x: x, y: y });
+    entry.add_component::<Position>(Position { x, y });
   }
 }
 
