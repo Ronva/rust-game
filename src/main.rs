@@ -1,12 +1,33 @@
+use bracket_lib::prelude::*;
+// use doryen_rs::*;
+use legion::*;
+
 mod constants;
-mod game;
 mod net;
+mod player;
 mod structs;
 mod utils;
 
-fn main() {
-  let socket = net::connect_to_server();
-  // net::send_to_server(&socket, b"disconnect");
+use crate::constants::*;
+use crate::player::*;
+use crate::structs::*;
+use crate::utils::*;
 
-  let _game = game::run(socket);
+pub fn main() -> BError {
+  let context = BTermBuilder::simple(WIDTH, HEIGHT).unwrap().build()?;
+
+  let mut gs = State::new();
+
+  let stars = generate_stars();
+  let _entities: &[Entity] = gs.ecs.extend(stars);
+  // draw_ascii(&mut gs, PLANET, 3, 3);
+  create_player(
+    &mut gs,
+    Player {
+      id: String::from("me"),
+    },
+    Position { x: 0, y: 0 },
+  );
+
+  main_loop(context, gs)
 }

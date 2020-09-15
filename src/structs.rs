@@ -1,5 +1,11 @@
-use bracket_lib::prelude::RGB;
+use bracket_lib::prelude::*;
+// use doryen_rs::*;
+use legion::*;
+use std::collections::HashMap;
+use std::net::UdpSocket;
 
+use crate::net;
+use crate::player::player_input;
 use crate::utils;
 
 // Components
@@ -32,3 +38,43 @@ pub struct Player {
 pub struct Ignore {}
 
 // Components end
+
+// Game state
+
+pub struct State {
+  pub ecs: World,
+  pub socket: UdpSocket,
+  pub players: HashMap<String, Entity>,
+}
+
+impl GameState for State {
+  fn tick(&mut self, ctx: &mut BTerm) {
+    ctx.cls();
+
+    // listen for UDP messages
+    net::udp_listener(self);
+
+    // listen for player input
+    player_input(self, ctx);
+
+    let mut query = <(&Renderable, &mut Position)>::query()
+      .filter(!component::<Ignore>() & maybe_changed::<Position>());
+
+    for (render, pos) in query.iter_mut(&mut self.ecs) {
+      ctx.set(pos.x, pos.y, render.fg, render.bg, to_cp437(render.glyph));
+    }
+  }
+}
+
+impl State {
+  pub fn new() -> Self {
+    let socket = net::connect_to_server();
+    Self {
+      ecs: World::default(),
+      socket: socket,
+      players: HashMap::new(),
+    }
+  }
+}
+
+// Game state end
