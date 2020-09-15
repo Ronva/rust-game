@@ -1,4 +1,3 @@
-use bracket_lib::prelude as bracket;
 use bracket_lib::prelude::*;
 use std::str;
 
@@ -34,14 +33,7 @@ pub fn draw_ascii(gs: &mut State, ascii: &str, x_offset: i32, y_offset: i32) {
   for (i, line) in ascii.lines().enumerate() {
     for (j, c) in line.chars().enumerate() {
       let (x, y) = (j as i32 + x_offset, i as i32 + y_offset);
-      render_glyph(
-        gs,
-        c,
-        x,
-        y,
-        RGB::named(bracket::WHITE),
-        RGB::named(bracket::BLACK),
-      )
+      render_glyph(gs, c, x, y, RGB::named(WHITE), RGB::named(BLACK))
     }
   }
 }
@@ -66,8 +58,8 @@ pub fn generate_stars() -> Vec<(Renderable, Position)> {
       if n > 0.0 && n < 0.8 && should_show > 0.75 {
         let mut renderable = Renderable {
           glyph: '.',
-          fg: RGB::named(bracket::WHITE),
-          bg: RGB::named(bracket::BLACK),
+          fg: RGB::named(WHITE),
+          bg: RGB::named(BLACK),
         };
         renderable.transparentize(n);
         let position = Position { x, y };

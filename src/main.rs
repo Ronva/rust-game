@@ -1,5 +1,4 @@
 use bracket_lib::prelude::*;
-// use doryen_rs::*;
 use legion::*;
 
 mod constants;
@@ -8,13 +7,18 @@ mod player;
 mod structs;
 mod utils;
 
-use crate::constants::*;
+use crate::constants::{HEIGHT, WIDTH};
 use crate::player::*;
 use crate::structs::*;
 use crate::utils::*;
 
 pub fn main() -> BError {
-  let context = BTermBuilder::simple(WIDTH, HEIGHT).unwrap().build()?;
+  let context = BTermBuilder::simple(WIDTH, HEIGHT)
+    .unwrap()
+    .with_title("Title")
+    .with_vsync(false)
+    .with_advanced_input(true)
+    .build()?;
 
   let mut gs = State::new();
 

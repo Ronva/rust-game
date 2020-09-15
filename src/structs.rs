@@ -1,9 +1,9 @@
 use bracket_lib::prelude::*;
-// use doryen_rs::*;
 use legion::*;
 use std::collections::HashMap;
 use std::net::UdpSocket;
 
+use crate::constants::WIDTH;
 use crate::net;
 use crate::player::player_input;
 use crate::utils;
@@ -50,6 +50,14 @@ pub struct State {
 impl GameState for State {
   fn tick(&mut self, ctx: &mut BTerm) {
     ctx.cls();
+    let mut input = INPUT.lock();
+
+    input.for_each_message(|event| {
+      if event == BEvent::CloseRequested {
+        net::disconnect(&self.socket);
+        ctx.quitting = true;
+      }
+    });
 
     // listen for UDP messages
     net::udp_listener(self);
@@ -63,6 +71,8 @@ impl GameState for State {
     for (render, pos) in query.iter_mut(&mut self.ecs) {
       ctx.set(pos.x, pos.y, render.fg, render.bg, to_cp437(render.glyph));
     }
+
+    ctx.print(WIDTH - 8, 1, &format!("FPS:{}", ctx.fps));
   }
 }
 

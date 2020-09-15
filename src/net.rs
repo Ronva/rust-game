@@ -16,6 +16,10 @@ pub fn connect_to_server() -> UdpSocket {
   socket
 }
 
+pub fn disconnect(socket: &UdpSocket) {
+  send_to_server(socket, b"disconnect");
+}
+
 pub fn send_to_server(socket: &UdpSocket, msg: &[u8]) {
   socket.send(msg).expect("couldn't send message");
 }
@@ -55,6 +59,7 @@ pub fn process_server_data(gs: &mut State, data: String) {
         }
       }
     }
+    "d" => remove_player(gs, String::from(info)),
     _ => {}
   }
 }

@@ -1,4 +1,3 @@
-use bracket_lib::prelude as bracket;
 use bracket_lib::prelude::*;
 use legion::world::Entry;
 
@@ -11,8 +10,8 @@ pub fn create_player(gs: &mut State, player: Player, pos: Position) {
     pos,
     Renderable {
       glyph: '@',
-      fg: RGB::named(bracket::WHITE),
-      bg: RGB::named(bracket::BLACK),
+      fg: RGB::named(WHITE),
+      bg: RGB::named(BLACK),
     },
     player,
   ));
@@ -48,6 +47,12 @@ pub fn move_player(gs: &mut State, player_id: String, x: i32, y: i32) {
   if let Some(mut entry) = get_player_entry(gs, player_id) {
     entry.remove_component::<Position>();
     entry.add_component::<Position>(Position { x, y });
+  }
+}
+
+pub fn remove_player(gs: &mut State, player_id: String) {
+  if let Some(entity) = gs.players.get(&player_id) {
+    gs.ecs.remove(*entity);
   }
 }
 
